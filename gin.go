@@ -238,6 +238,20 @@ func (engine *Engine) RunTLS(addr string, certFile string, keyFile string) (err 
 	return
 }
 
+//Use http/2
+func (engine *Engine) RunTLS2(addr string, certFile string, keyFile string) (err error) {
+	debugPrint("Listening and serving HTTPS on %s\n", addr)
+	defer func() { debugPrintError(err) }()
+
+	srv := &http.Server{
+		Addr:    addr, // Normally ":443"
+		Handler: engine,
+	}
+	err = http2.ConfigureServer(srv, &http2.Server{})
+	err = srv.ListenAndServeTLS(certFile, keyFile)
+	return
+}
+
 // RunUnix attaches the router to a http.Server and starts listening and serving HTTP requests
 // through the specified unix socket (ie. a file).
 // Note: this method will block the calling goroutine indefinitely unless an error happens.
